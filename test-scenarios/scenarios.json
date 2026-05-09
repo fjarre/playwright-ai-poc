@@ -1,0 +1,318 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "site": "https://www.saucedemo.com",
+    "description": "Scenarios de test e-commerce pour le PoC Playwright x AI (ITE-257)",
+    "author": "SDET Agent - Itecor Practice QA Automation",
+    "created_at": "2026-05-09",
+    "related_issues": ["ITE-255", "ITE-257"]
+  },
+  "scenarios": [
+    {
+      "id": "SC-001",
+      "title": "Login avec credentials valides",
+      "category": "authentication",
+      "priority": "critical",
+      "description": "Verifier qu'un utilisateur standard peut se connecter avec les credentials valides",
+      "preconditions": [
+        "Le navigateur est ouvert",
+        "L'utilisateur est sur la page https://www.saucedemo.com"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Saisir 'standard_user' dans le champ Username"
+        },
+        {
+          "step": 2,
+          "action": "Saisir 'secret_sauce' dans le champ Password"
+        },
+        {
+          "step": 3,
+          "action": "Cliquer sur le bouton 'Login'"
+        }
+      ],
+      "expected_result": "L'utilisateur est redirige vers la page /inventory.html. Le titre 'Swag Labs' est visible. La liste des produits est affichee (6 articles).",
+      "playwright_hints": [
+        "page.fill('#user-name', 'standard_user')",
+        "page.fill('#password', 'secret_sauce')",
+        "page.click('#login-button')",
+        "expect(page).toHaveURL(/inventory/)"
+      ]
+    },
+    {
+      "id": "SC-002",
+      "title": "Login avec credentials invalides - message d'erreur",
+      "category": "authentication",
+      "priority": "high",
+      "description": "Verifier qu'un message d'erreur approprie s'affiche en cas de credentials incorrects",
+      "preconditions": [
+        "Le navigateur est ouvert",
+        "L'utilisateur est sur la page https://www.saucedemo.com"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Saisir 'invalid_user' dans le champ Username"
+        },
+        {
+          "step": 2,
+          "action": "Saisir 'wrong_password' dans le champ Password"
+        },
+        {
+          "step": 3,
+          "action": "Cliquer sur le bouton 'Login'"
+        }
+      ],
+      "expected_result": "L'utilisateur reste sur la page de login. Un message d'erreur rouge s'affiche: 'Epic sadface: Username and password do not match any user in this service'. Les champs Username et Password sont surlignes en rouge.",
+      "playwright_hints": [
+        "page.fill('#user-name', 'invalid_user')",
+        "page.fill('#password', 'wrong_password')",
+        "page.click('#login-button')",
+        "expect(page.locator('[data-test=\"error\"]')).toBeVisible()",
+        "expect(page.locator('[data-test=\"error\"]')).toContainText('Username and password do not match')"
+      ]
+    },
+    {
+      "id": "SC-003",
+      "title": "Navigation et tri du catalogue produits",
+      "category": "product_catalog",
+      "priority": "high",
+      "description": "Verifier la navigation dans le catalogue et le tri des produits par prix et nom",
+      "preconditions": [
+        "L'utilisateur est connecte en tant que standard_user",
+        "L'utilisateur est sur la page /inventory.html"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Verifier que 6 produits sont affiches sur la page"
+        },
+        {
+          "step": 2,
+          "action": "Selectionner 'Price (low to high)' dans le menu de tri"
+        },
+        {
+          "step": 3,
+          "action": "Verifier que les produits sont tries par prix croissant (premier: $7.99, dernier: $49.99)"
+        },
+        {
+          "step": 4,
+          "action": "Selectionner 'Name (Z to A)' dans le menu de tri"
+        },
+        {
+          "step": 5,
+          "action": "Verifier que les produits sont tries par nom en ordre decroissant"
+        },
+        {
+          "step": 6,
+          "action": "Cliquer sur un produit ('Sauce Labs Backpack') pour voir le detail"
+        },
+        {
+          "step": 7,
+          "action": "Verifier que la page de detail du produit s'affiche avec image, nom, description et prix"
+        }
+      ],
+      "expected_result": "6 produits sont listes. Le tri fonctionne correctement (par prix et par nom). La page de detail affiche toutes les informations du produit selectionne.",
+      "playwright_hints": [
+        "expect(page.locator('.inventory_item')).toHaveCount(6)",
+        "page.selectOption('[data-test=\"product_sort_container\"]', 'lohi')",
+        "page.click('[data-test=\"item-4-title-link\"]')",
+        "expect(page.locator('.inventory_details_name')).toBeVisible()"
+      ]
+    },
+    {
+      "id": "SC-004",
+      "title": "Ajout d'un produit au panier depuis le catalogue",
+      "category": "cart_management",
+      "priority": "critical",
+      "description": "Verifier qu'un produit peut etre ajoute au panier et que le compteur du panier se met a jour",
+      "preconditions": [
+        "L'utilisateur est connecte en tant que standard_user",
+        "Le panier est vide",
+        "L'utilisateur est sur la page /inventory.html"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Verifier que le badge du panier (icone en haut a droite) n'est pas visible ou affiche 0"
+        },
+        {
+          "step": 2,
+          "action": "Cliquer sur le bouton 'Add to cart' du produit 'Sauce Labs Backpack'"
+        },
+        {
+          "step": 3,
+          "action": "Verifier que le badge du panier affiche maintenant '1'"
+        },
+        {
+          "step": 4,
+          "action": "Verifier que le bouton du produit est passe a 'Remove'"
+        },
+        {
+          "step": 5,
+          "action": "Cliquer sur l'icone du panier pour aller a /cart.html"
+        },
+        {
+          "step": 6,
+          "action": "Verifier que le produit 'Sauce Labs Backpack' est present dans le panier avec son prix ($29.99)"
+        }
+      ],
+      "expected_result": "Le produit est ajoute au panier. Le badge du panier affiche '1'. Le bouton devient 'Remove'. Le panier contient bien le produit avec son nom, sa description et son prix.",
+      "playwright_hints": [
+        "page.click('[data-test=\"add-to-cart-sauce-labs-backpack\"]')",
+        "expect(page.locator('.shopping_cart_badge')).toHaveText('1')",
+        "expect(page.locator('[data-test=\"remove-sauce-labs-backpack\"]')).toBeVisible()",
+        "page.click('.shopping_cart_link')",
+        "expect(page.locator('.cart_item')).toHaveCount(1)"
+      ]
+    },
+    {
+      "id": "SC-005",
+      "title": "Suppression d'un produit du panier",
+      "category": "cart_management",
+      "priority": "high",
+      "description": "Verifier qu'un produit peut etre supprime du panier depuis la page panier",
+      "preconditions": [
+        "L'utilisateur est connecte en tant que standard_user",
+        "Le produit 'Sauce Labs Backpack' est dans le panier",
+        "L'utilisateur est sur la page /cart.html"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Verifier que le panier contient 1 article (badge = 1)"
+        },
+        {
+          "step": 2,
+          "action": "Cliquer sur le bouton 'Remove' a cote du produit 'Sauce Labs Backpack'"
+        },
+        {
+          "step": 3,
+          "action": "Verifier que le produit disparait de la liste du panier"
+        },
+        {
+          "step": 4,
+          "action": "Verifier que le badge du panier disparait (panier vide)"
+        }
+      ],
+      "expected_result": "Le produit est supprime du panier. La liste des articles du panier est vide. Le badge du panier n'est plus affiche.",
+      "playwright_hints": [
+        "page.click('[data-test=\"remove-sauce-labs-backpack\"]')",
+        "expect(page.locator('.cart_item')).toHaveCount(0)",
+        "expect(page.locator('.shopping_cart_badge')).not.toBeVisible()"
+      ]
+    },
+    {
+      "id": "SC-006",
+      "title": "Checkout complet - parcours de commande",
+      "category": "checkout",
+      "priority": "critical",
+      "description": "Verifier le parcours de commande complet depuis l'ajout au panier jusqu'a la confirmation de commande",
+      "preconditions": [
+        "L'utilisateur est connecte en tant que standard_user",
+        "Le panier est vide"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Ajouter au moins 2 produits au panier (ex: 'Sauce Labs Backpack' et 'Sauce Labs Bolt T-Shirt')"
+        },
+        {
+          "step": 2,
+          "action": "Naviguer vers le panier en cliquant sur l'icone du panier"
+        },
+        {
+          "step": 3,
+          "action": "Verifier que les 2 articles sont presents dans le panier"
+        },
+        {
+          "step": 4,
+          "action": "Cliquer sur le bouton 'Checkout'"
+        },
+        {
+          "step": 5,
+          "action": "Remplir le formulaire d'information: First Name='John', Last Name='Doe', Zip Code='12345'"
+        },
+        {
+          "step": 6,
+          "action": "Cliquer sur le bouton 'Continue'"
+        },
+        {
+          "step": 7,
+          "action": "Verifier la page de recapitulatif (Checkout: Overview): les articles, le sous-total et le total avec taxes"
+        },
+        {
+          "step": 8,
+          "action": "Cliquer sur le bouton 'Finish'"
+        },
+        {
+          "step": 9,
+          "action": "Verifier la page de confirmation de commande"
+        }
+      ],
+      "expected_result": "La commande est confirmee sur la page /checkout-complete.html. Le message 'Thank you for your order!' s'affiche avec l'image du camion Pony Express. Le panier est vide apres confirmation.",
+      "playwright_hints": [
+        "page.click('[data-test=\"add-to-cart-sauce-labs-backpack\"]')",
+        "page.click('[data-test=\"add-to-cart-sauce-labs-bolt-t-shirt\"]')",
+        "page.click('.shopping_cart_link')",
+        "page.click('[data-test=\"checkout\"]')",
+        "page.fill('[data-test=\"firstName\"]', 'John')",
+        "page.fill('[data-test=\"lastName\"]', 'Doe')",
+        "page.fill('[data-test=\"postalCode\"]', '12345')",
+        "page.click('[data-test=\"continue\"]')",
+        "expect(page.locator('.summary_total_label')).toBeVisible()",
+        "page.click('[data-test=\"finish\"]')",
+        "expect(page).toHaveURL(/checkout-complete/)",
+        "expect(page.locator('.complete-header')).toHaveText('Thank you for your order!')"
+      ]
+    },
+    {
+      "id": "SC-007",
+      "title": "Logout et protection des pages authentifiees",
+      "category": "authentication",
+      "priority": "medium",
+      "description": "Verifier que le logout fonctionne et que les pages protegees redirigent vers le login",
+      "preconditions": [
+        "L'utilisateur est connecte en tant que standard_user",
+        "L'utilisateur est sur la page /inventory.html"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Cliquer sur l'icone hamburger (menu) en haut a gauche"
+        },
+        {
+          "step": 2,
+          "action": "Verifier que le menu lateral s'ouvre avec les options All Items, About, Logout, Reset App State"
+        },
+        {
+          "step": 3,
+          "action": "Cliquer sur 'Logout'"
+        },
+        {
+          "step": 4,
+          "action": "Verifier que l'utilisateur est redirige vers la page de login"
+        },
+        {
+          "step": 5,
+          "action": "Essayer d'acceder directement a /inventory.html sans etre connecte"
+        }
+      ],
+      "expected_result": "Apres logout, l'utilisateur est redirige vers la page de login (URL = https://www.saucedemo.com/). L'acces direct a /inventory.html redirige aussi vers la page de login.",
+      "playwright_hints": [
+        "page.click('#react-burger-menu-btn')",
+        "page.click('#logout_sidebar_link')",
+        "expect(page).toHaveURL('https://www.saucedemo.com/')",
+        "await page.goto('https://www.saucedemo.com/inventory.html')",
+        "expect(page).toHaveURL('https://www.saucedemo.com/')"
+      ]
+    }
+  ],
+  "kill_criteria_mapping": {
+    "K1_wrong_starting_point": "Le test genere commence sur une URL incorrecte ou utilise un utilisateur inexistant",
+    "K2_partial_coverage": "Le test genere couvre moins de 80% des etapes du scenario",
+    "K3_incorrect_result": "Le test genere valide un resultat attendu incorrect (ex: mauvais message d erreur)",
+    "K4_performance": "La generation du test depasse 60s ou $1 de cout LLM pour un scenario"
+  }
+}

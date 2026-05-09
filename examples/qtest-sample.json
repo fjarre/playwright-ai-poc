@@ -1,0 +1,22 @@
+[
+  {
+    "id": "TC-001",
+    "name": "Login standard user",
+    "description": "Vérifier qu'un utilisateur valide peut se connecter à saucedemo et accéder à l'inventaire.",
+    "steps": [
+      { "order": 1, "action": "Naviguer sur la page de login", "expected": "Le formulaire de login est visible." },
+      { "order": 2, "action": "Saisir standard_user / secret_sauce et soumettre", "expected": "Redirection vers /inventory.html." },
+      { "order": 3, "action": "Vérifier la liste des produits", "expected": "Le conteneur d'inventaire est visible." }
+    ]
+  },
+  {
+    "id": "TC-002",
+    "name": "Ajout produit panier",
+    "description": "Vérifier qu'un produit ajouté au panier est correctement comptabilisé.",
+    "steps": [
+      { "order": 1, "action": "Login standard_user", "expected": "Inventaire visible." },
+      { "order": 2, "action": "Cliquer sur Add to cart pour Sauce Labs Backpack", "expected": "Le badge du panier affiche 1." },
+      { "order": 3, "action": "Ouvrir le panier", "expected": "Le panier contient un item." }
+    ]
+  }
+]

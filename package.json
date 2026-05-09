@@ -1,0 +1,30 @@
+{
+  "name": "playwright-ai-poc",
+  "version": "0.1.0",
+  "private": false,
+  "description": "PoC: générer des tests Playwright à partir de prompts en langage naturel via Claude (Anthropic SDK).",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "generate": "tsx src/cli.ts generate",
+    "generate:qtest": "tsx src/cli.ts qtest",
+    "test": "playwright test",
+    "test:report": "playwright show-report",
+    "demo": "tsx src/cli.ts generate --prompt \"Tester que le login fonctionne avec standard_user et secret_sauce\" --out tests/login.spec.ts && tsx src/cli.ts generate --prompt \"Verifier qu on peut ajouter un produit au panier et voir le total\" --out tests/add-to-cart.spec.ts && tsx src/cli.ts generate --prompt \"Tester le processus de checkout complet\" --out tests/checkout.spec.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
