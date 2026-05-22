@@ -3,7 +3,8 @@ import { Command } from 'commander';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { config as loadEnv } from 'dotenv';
-import { generateSpec } from './generator.js';
+import { generateSpec as generateAnthropicSpec } from './generator.js';
+import { generateSpec as generateGithubSpec } from './generator-github-models.js';
 import { readQTestFile, generateFromQTest } from './qtest.js';
 
 loadEnv();
@@ -12,7 +13,7 @@ const program = new Command();
 
 program
   .name('playwright-ai')
-  .description('PoC : générer des tests Playwright à partir de prompts NL via Claude.')
+  .description('PoC : générer des tests Playwright à partir de prompts NL via IA.')
   .version('0.1.0');
 
 program
@@ -20,19 +21,36 @@ program
   .description('Générer un test Playwright depuis un prompt en langage naturel.')
   .requiredOption('-p, --prompt <text>', 'Description du scénario en langage naturel')
   .option('-o, --out <path>', 'Chemin de sortie du fichier .spec.ts', 'tests/generated.spec.ts')
-  .option('-m, --model <model>', 'Modèle Anthropic à utiliser')
-  .action(async (opts: { prompt: string; out: string; model?: string }) => {
-    requireApiKey();
-    process.stdout.write(`→ Génération via Claude (${opts.model ?? 'défaut'})...\n`);
-    const result = await generateSpec({ prompt: opts.prompt, model: opts.model });
-    await writeOut(opts.out, result.code);
-    process.stdout.write(
-      `✓ Écrit : ${opts.out}\n` +
-        `  Modèle : ${result.model}\n` +
-        `  Tokens in/out : ${result.inputTokens}/${result.outputTokens}\n` +
-        `  Cache create/read : ${result.cacheCreationInputTokens}/${result.cacheReadInputTokens}\n`,
-    );
-  });
+  .option('-m, --model <model>', 'Modèle à utiliser (dépend du provider)')
+  .option(
+    '--provider <provider>',
+    'Provider LLM : anthropic (défaut) ou github',
+    'anthropic',
+  )
+  .action(
+    async (opts: { prompt: string; out: string; model?: string; provider: string }) => {
+      if (opts.provider === 'github') {
+        requireGithubToken();
+        process.stdout.write(
+          `→ Génération via GitHub Models (${opts.model ?? process.env.GITHUB_MODEL ?? 'meta/Llama-3.3-70B-Instruct'})...\n`,
+        );
+        const result = await generateGithubSpec({ prompt: opts.prompt, model: opts.model });
+        await writeOut(opts.out, result.code);
+        process.stdout.write(`✓ Écrit : ${opts.out}\n  Modèle : ${result.model}\n`);
+      } else {
+        requireApiKey();
+        process.stdout.write(`→ Génération via Claude (${opts.model ?? 'défaut'})...\n`);
+        const result = await generateAnthropicSpec({ prompt: opts.prompt, model: opts.model });
+        await writeOut(opts.out, result.code);
+        process.stdout.write(
+          `✓ Écrit : ${opts.out}\n` +
+            `  Modèle : ${result.model}\n` +
+            `  Tokens in/out : ${result.inputTokens}/${result.outputTokens}\n` +
+            `  Cache create/read : ${result.cacheCreationInputTokens}/${result.cacheReadInputTokens}\n`,
+        );
+      }
+    },
+  );
 
 program
   .command('qtest')
@@ -71,6 +89,16 @@ function requireApiKey() {
   if (!process.env.ANTHROPIC_API_KEY) {
     process.stderr.write(
       '✗ ANTHROPIC_API_KEY est manquante. Copiez .env.example en .env et renseignez la clé.\n',
+    );
+    process.exit(2);
+  }
+}
+
+function requireGithubToken() {
+  if (!process.env.GITHUB_TOKEN) {
+    process.stderr.write(
+      '✗ GITHUB_TOKEN est manquant. Dans GitHub Actions il est fourni automatiquement.\n' +
+        '  En local : export GITHUB_TOKEN=$(gh auth token)\n',
     );
     process.exit(2);
   }
