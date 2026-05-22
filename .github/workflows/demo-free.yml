@@ -1,0 +1,96 @@
+name: Demo Playwright x GitHub Models (gratuit)
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt_1:
+        description: "Prompt test 1"
+        required: false
+        default: "Tester que le login fonctionne avec standard_user et secret_sauce"
+      prompt_2:
+        description: "Prompt test 2"
+        required: false
+        default: "Vérifier qu'on peut ajouter un produit au panier et voir le total"
+      prompt_3:
+        description: "Prompt test 3"
+        required: false
+        default: "Tester le processus de checkout complet jusqu'à la confirmation"
+      model:
+        description: "Modèle GitHub Models à utiliser"
+        required: false
+        default: "meta/Llama-3.3-70B-Instruct"
+
+permissions:
+  contents: read
+  models: read
+
+jobs:
+  generate-and-test:
+    name: Génération GitHub Models + Playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_MODEL: ${{ github.event.inputs.model }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Installer Playwright (Chromium only)
+        run: npx playwright install chromium --with-deps
+
+      - name: Générer test 1 via GitHub Models
+        run: |
+          npm run generate -- --provider github --prompt "${{ github.event.inputs.prompt_1 }}" --out tests/generated-1.spec.ts
+          echo "=== Test généré (1) ==="
+          cat tests/generated-1.spec.ts
+
+      - name: Générer test 2 via GitHub Models
+        run: |
+          npm run generate -- --provider github --prompt "${{ github.event.inputs.prompt_2 }}" --out tests/generated-2.spec.ts
+          echo "=== Test généré (2) ==="
+          cat tests/generated-2.spec.ts
+
+      - name: Générer test 3 via GitHub Models
+        run: |
+          npm run generate -- --provider github --prompt "${{ github.event.inputs.prompt_3 }}" --out tests/generated-3.spec.ts
+          echo "=== Test généré (3) ==="
+          cat tests/generated-3.spec.ts
+
+      - name: Exécuter tous les tests Playwright
+        env:
+          CI: true
+        run: npm test
+
+      - name: Upload rapport Playwright
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-free-${{ github.run_number }}
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Résumé
+        if: always()
+        run: |
+          echo "## Demo Playwright x GitHub Models" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Modèle utilisé :** ${{ github.event.inputs.model }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Prompts :**" >> $GITHUB_STEP_SUMMARY
+          echo "1. ${{ github.event.inputs.prompt_1 }}" >> $GITHUB_STEP_SUMMARY
+          echo "2. ${{ github.event.inputs.prompt_2 }}" >> $GITHUB_STEP_SUMMARY
+          echo "3. ${{ github.event.inputs.prompt_3 }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> Aucun secret externe requis — utilise uniquement GITHUB_TOKEN." >> $GITHUB_STEP_SUMMARY
