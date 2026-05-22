@@ -1,4 +1,4 @@
-# playwright-ai-poc
+﻿# playwright-ai-poc
 
 PoC technique pour [ITE-256](https://github.com/) (parent ITE-255 « PlayWright x AI ») — démontrer la **génération de tests Playwright TypeScript à partir de prompts en langage naturel**, via l'API Anthropic (modèle `claude-sonnet-4-6`) et avec **prompt caching** sur le contexte saucedemo.
 
@@ -26,6 +26,59 @@ npm run test:report        # ouvrir le rapport
 
 ---
 
+---
+
+## Mode gratuit (GitHub Models)
+
+En plus du mode `anthropic` (clé API payante), la CLI supporte un mode **`github`** utilisant [GitHub Models](https://docs.github.com/en/github-models) — gratuit et disponible nativement dans GitHub Actions via `GITHUB_TOKEN`.
+
+### Deux modes disponibles
+
+| Mode | Provider | Auth | Modèle par défaut | Coût |
+|------|----------|------|-------------------|------|
+| `anthropic` (défaut) | Anthropic API | `ANTHROPIC_API_KEY` | `claude-sonnet-4-6` | ~$0.007/spec |
+| `github` | GitHub Models | `GITHUB_TOKEN` | `meta/Llama-3.3-70B-Instruct` | Gratuit |
+
+### Utilisation en local
+
+```bash
+# Exporter le token GitHub (si gh CLI installé)
+export GITHUB_TOKEN=$(gh auth token)
+
+# Générer un test via GitHub Models
+npm run generate -- --provider github --prompt "Tester que le login fonctionne avec standard_user et secret_sauce"
+
+# Ou via le script raccourci
+npm run generate:github -- --prompt "Vérifier qu'on peut ajouter un produit au panier"
+
+# Changer de modèle (ex : gpt-4o-mini)
+npm run generate -- --provider github --model gpt-4o-mini --prompt "Tester le checkout complet"
+```
+
+### Workflow GitHub Actions (zéro secret externe)
+
+Le workflow [`demo-free.yml`](.github/workflows/demo-free.yml) génère et exécute 3 tests Playwright **sans aucun secret supplémentaire** — uniquement le `GITHUB_TOKEN` natif.
+
+```bash
+# Déclencher manuellement depuis la CLI GitHub
+gh workflow run demo-free.yml \
+  --field prompt_1="Tester le login avec standard_user" \
+  --field prompt_2="Ajouter un produit au panier" \
+  --field prompt_3="Checkout complet jusqu'à la confirmation"
+```
+
+Ou depuis l'onglet **Actions → Demo Playwright x GitHub Models (gratuit) → Run workflow** sur GitHub.
+
+### Modèles disponibles
+
+Les modèles testés sur l'endpoint `https://models.inference.ai.azure.com` :
+
+| Modèle | Notes |
+|--------|-------|
+| `meta/Llama-3.3-70B-Instruct` | Défaut — bon équilibre qualité/vitesse |
+| `gpt-4o-mini` | Alternative OpenAI, sortie plus structurée |
+
+La variable d'environnement `GITHUB_MODEL` permet de surcharger le modèle par défaut sans modifier la commande.
 ## Architecture
 
 ```
