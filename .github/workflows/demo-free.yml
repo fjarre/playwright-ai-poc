@@ -18,7 +18,7 @@ on:
       model:
         description: "Modèle GitHub Models à utiliser"
         required: false
-        default: "meta/Llama-3.3-70B-Instruct"
+        default: "gpt-4o-mini"
 
 permissions:
   contents: read

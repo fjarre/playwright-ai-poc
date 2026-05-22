@@ -32,7 +32,7 @@ program
       if (opts.provider === 'github') {
         requireGithubToken();
         process.stdout.write(
-          `→ Génération via GitHub Models (${opts.model ?? process.env.GITHUB_MODEL ?? 'meta/Llama-3.3-70B-Instruct'})...\n`,
+          `→ Génération via GitHub Models (${opts.model ?? process.env.GITHUB_MODEL ?? 'gpt-4o-mini'})...\n`,
         );
         const result = await generateGithubSpec({ prompt: opts.prompt, model: opts.model });
         await writeOut(opts.out, result.code);

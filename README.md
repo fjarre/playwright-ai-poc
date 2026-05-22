@@ -37,7 +37,7 @@ En plus du mode `anthropic` (clé API payante), la CLI supporte un mode **`githu
 | Mode | Provider | Auth | Modèle par défaut | Coût |
 |------|----------|------|-------------------|------|
 | `anthropic` (défaut) | Anthropic API | `ANTHROPIC_API_KEY` | `claude-sonnet-4-6` | ~$0.007/spec |
-| `github` | GitHub Models | `GITHUB_TOKEN` | `meta/Llama-3.3-70B-Instruct` | Gratuit |
+| `github` | GitHub Models | `GITHUB_TOKEN` | `gpt-4o-mini` | Gratuit |
 
 ### Utilisation en local
 
@@ -75,8 +75,8 @@ Les modèles testés sur l'endpoint `https://models.inference.ai.azure.com` :
 
 | Modèle | Notes |
 |--------|-------|
-| `meta/Llama-3.3-70B-Instruct` | Défaut — bon équilibre qualité/vitesse |
-| `gpt-4o-mini` | Alternative OpenAI, sortie plus structurée |
+| `gpt-4o-mini` | Défaut — toujours disponible, sortie structurée |
+| `meta/Llama-3.3-70B-Instruct` | Accès selon les permissions GitHub Models de votre compte |
 
 La variable d'environnement `GITHUB_MODEL` permet de surcharger le modèle par défaut sans modifier la commande.
 ## Architecture

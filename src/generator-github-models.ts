@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import { SAUCEDEMO_SYSTEM_PROMPT } from './system-prompt.js';
 
-const DEFAULT_MODEL = process.env.GITHUB_MODEL ?? 'meta/Llama-3.3-70B-Instruct';
+const DEFAULT_MODEL = process.env.GITHUB_MODEL ?? 'gpt-4o-mini';
 
 const client = new OpenAI({
   baseURL: 'https://models.inference.ai.azure.com',
