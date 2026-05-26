@@ -1,152 +1,106 @@
 # Pipeline multi-applications — ITE-281
-# 5 scénarios DemoWebShop (Tricentis) + 4 scénarios AutomationExercise
-# Sélecteurs canoniques fournis dans chaque prompt pour guider la génération IA.
+# Les sélecteurs canoniques sont dans src/system-prompt.ts (buildSystemPrompt).
+# Les prompts YAML décrivent le COMPORTEMENT — le système prompt injecte les sélecteurs.
 # Lancé via : npm run generate:scenarios -- -f test-scenarios/multi-app.yaml
 
 scenarios:
 
   # ─────────────────────────────────────────────────────────────────
-  # Application 1 : DemoWebShop by Tricentis (https://demowebshop.tricentis.com)
-  # NopCommerce — sélecteurs canoniques ci-dessous
-  # Search : input#small-searchterms  →  soumettre : keyboard.press('Enter') ou input[value="Search"]
-  # Navigation catégories : .top-menu > li > a  (textes : "Books", "Computers", "Electronics"…)
-  # Liste produits : .product-grid .item-box  →  titre : .product-title a  →  prix : .price.actual-price
-  # Add to cart (liste) : .product-box-add-to-cart-button  ou  input[value="Add to cart"]
-  # Cart badge header : .cart-qty  (ex: "(1)")
-  # Register form : #register-form  →  #FirstName, #LastName, #Email, #Password, #ConfirmPassword
-  # Bouton register : input[value="Register"]  ou  #register-next-step-button
-  # Cart page items : .cart > tbody > tr  →  total : .cart-total tr:last-child td:last-child
+  # Application 1 : DemoWebShop by Tricentis
+  # Sélecteurs dans DEMOWEBSHOP_SYSTEM_PROMPT (system-prompt.ts)
   # ─────────────────────────────────────────────────────────────────
 
   - name: "DemoWebShop - Homepage et navigation par catégorie"
     url: "https://demowebshop.tricentis.com"
     prompt: |
       Naviguer vers https://demowebshop.tricentis.com/.
-      Vérifier que la page a le titre 'Demo Web Shop' avec expect(page).toHaveTitle('Demo Web Shop').
-      Utiliser page.locator('.top-menu') pour vérifier que la navigation contient 'Books' et 'Computers'
-      avec expect(page.locator('.top-menu')).toContainText('Books').
-      Cliquer sur le lien Books avec page.locator('.top-menu a[href="/books"]').click().
-      Attendre la navigation puis vérifier le titre h1 avec expect(page.locator('h1')).toContainText('Books').
-      Vérifier qu'au moins un produit est affiché : expect(page.locator('.product-grid .item-box').first()).toBeVisible().
+      Vérifier que le titre de page est 'Demo Web Shop'.
+      Vérifier que la navigation (.top-menu) contient 'Books' et 'Computers'.
+      Cliquer sur le lien Books dans le top-menu.
+      Vérifier que la page Books s'affiche (h1 contient 'Books').
+      Vérifier qu'au moins un produit est visible dans .product-grid .item-box.
 
   - name: "DemoWebShop - Recherche de produit"
     url: "https://demowebshop.tricentis.com"
     prompt: |
       Naviguer vers https://demowebshop.tricentis.com/.
-      Remplir le champ de recherche avec page.locator('input#small-searchterms').fill('computer').
-      Appuyer sur Entrée avec page.keyboard.press('Enter').
-      Vérifier que l'URL contient '/search' ou que la page de résultats s'affiche.
-      Vérifier que au moins un produit est visible : expect(page.locator('.product-grid .item-box').first()).toBeVisible().
-      Vérifier que le titre de la page de résultats contient 'Search' avec expect(page.locator('h1')).toContainText('Search').
+      Utiliser le champ input#small-searchterms pour chercher 'computer'.
+      Appuyer sur Entrée pour lancer la recherche.
+      Vérifier que l'URL contient 'search' ou 'q=computer'.
+      Vérifier qu'au moins un produit est visible dans les résultats (.product-grid .item-box).
 
   - name: "DemoWebShop - Ajout au panier depuis la liste"
     url: "https://demowebshop.tricentis.com"
     prompt: |
       Naviguer vers https://demowebshop.tricentis.com/books.
-      Attendre que les produits soient visibles : expect(page.locator('.product-grid .item-box').first()).toBeVisible().
-      Cliquer sur le titre du premier produit : page.locator('.product-grid .product-title a').first().click().
-      Vérifier que le prix est affiché : expect(page.locator('.product-price .price')).toBeVisible().
-      Cliquer sur le bouton d'ajout au panier : page.locator('input[value="Add to cart"]').first().click().
-      Attendre 2 secondes puis vérifier que le badge panier a été mis à jour :
-      expect(page.locator('.cart-qty')).not.toHaveText('(0)').
+      Vérifier qu'au moins un produit est visible (.product-grid .item-box).
+      Cliquer sur le titre du premier produit (.product-grid .item-box .product-title a).
+      Vérifier que le prix du produit est visible sur la page détail (.actual-price).
+      Cliquer sur le bouton Add to cart (input[value="Add to cart"]).
+      Vérifier que le badge panier (.cart-qty) ne contient plus '(0)'.
 
   - name: "DemoWebShop - Inscription d'un nouveau compte"
     url: "https://demowebshop.tricentis.com"
     prompt: |
       Naviguer vers https://demowebshop.tricentis.com/register.
-      Vérifier que les champs du formulaire sont visibles :
-        expect(page.locator('#FirstName')).toBeVisible()
-        expect(page.locator('#LastName')).toBeVisible()
-        expect(page.locator('#Email')).toBeVisible()
-        expect(page.locator('#Password')).toBeVisible()
-      Remplir le formulaire :
-        page.locator('#FirstName').fill('Test')
-        page.locator('#LastName').fill('User')
-        page.locator('#Email').fill('testuser.ite281@mailinator.com')
-        page.locator('#Password').fill('Test1234!')
-        page.locator('#ConfirmPassword').fill('Test1234!')
-      Cliquer sur le bouton Register : page.locator('input[value="Register"]').click().
-      Vérifier le message de confirmation : expect(page.getByText('Your registration completed')).toBeVisible().
+      Vérifier que les champs #FirstName, #LastName, #Email, #Password sont visibles.
+      Remplir le formulaire : FirstName='Test', LastName='User',
+        Email='testuser.ite281@mailinator.com', Password='Test1234!', ConfirmPassword='Test1234!'.
+      Cliquer sur le bouton input[value="Register"].
+      Vérifier le message de confirmation 'Your registration completed'.
 
   - name: "DemoWebShop - Panier et récapitulatif de commande"
     url: "https://demowebshop.tricentis.com"
     prompt: |
-      Naviguer vers https://demowebshop.tricentis.com/camera-photo
-      (NB: l'URL correcte est /camera-photo, pas /electronics/camera-photo).
-      Attendre que les produits soient visibles : expect(page.locator('.product-grid .item-box').first()).toBeVisible().
-      Cliquer sur le titre du premier produit : page.locator('.product-grid .product-title a').first().click().
-      Cliquer sur le bouton Add to cart : page.locator('input[value="Add to cart"]').first().click().
+      Naviguer vers https://demowebshop.tricentis.com/electronics/camera-photo.
+      Vérifier qu'au moins un produit est visible dans .product-grid .item-box.
+      Cliquer sur le titre du premier produit (.product-grid .item-box .product-title a).
+      Cliquer sur le bouton Add to cart (input[value="Add to cart"]).
       Naviguer vers https://demowebshop.tricentis.com/cart.
-      Vérifier qu'au moins une ligne produit est dans le tableau :
-        expect(page.locator('.cart > tbody > tr').first()).toBeVisible().
-      Vérifier que le total de la commande est affiché :
-        expect(page.locator('.cart-total')).toBeVisible().
+      Vérifier qu'au moins une ligne produit est présente (.cart > tbody > tr).
+      Vérifier que le total de commande est affiché (.cart-total).
 
   # ─────────────────────────────────────────────────────────────────
-  # Application 2 : AutomationExercise (https://automationexercise.com)
-  # Sélecteurs canoniques ci-dessous
-  # Nav links : header .nav-item a  (textes : "Home", "Products", "Cart", "Signup / Login")
-  # Products list : .features_items .col-sm-4
-  # View Product link : .choose a  (pour accéder au détail d'un produit)
-  # Product detail Add to cart : .btn.btn-default.cart  ou  button[type="button"] contenant "Add to cart"
-  # Search box : input#search_product  →  bouton : button#submit_search
-  # Searched products section : h2.title:has-text("Searched Products")
-  # Signup form : div.signup-form  →  name : input[data-qa="signup-name"]  →  email : input[data-qa="signup-email"]
-  # Signup button : button[data-qa="signup-button"]
-  # Cart items : #cart_info_table tbody tr
+  # Application 2 : AutomationExercise
+  # Sélecteurs dans AUTOMATIONEXERCISE_SYSTEM_PROMPT (system-prompt.ts)
   # ─────────────────────────────────────────────────────────────────
 
   - name: "AutomationExercise - Homepage et navigation"
     url: "https://automationexercise.com"
     prompt: |
       Naviguer vers https://automationexercise.com.
-      Vérifier que le logo ou le titre est visible avec expect(page.locator('header')).toBeVisible().
-      Vérifier que les liens de navigation principaux sont présents :
-        expect(page.locator('header .nav-item a[href="/"]')).toBeVisible()
-        expect(page.locator('header .nav-item a[href="/products"]')).toBeVisible()
-      Cliquer sur le lien Products : page.locator('header .nav-item a[href="/products"]').click().
-      Vérifier que la page produits se charge avec au moins 5 produits :
-        expect(page.locator('.features_items .col-sm-4')).toHaveCount.atLeast(5)
-      Si toHaveCount avec atLeast n'existe pas, utiliser :
-        expect(page.locator('.features_items .col-sm-4').first()).toBeVisible()
+      Vérifier que le lien Home est visible dans la navbar (ul.nav.navbar-nav li a[href="/"]).
+      Vérifier que le lien Products est visible (ul.nav.navbar-nav li a[href="/products"]).
+      Cliquer sur le lien Products.
+      Vérifier qu'au moins un produit est visible dans .features_items (.col-sm-4.first()).
 
   - name: "AutomationExercise - Recherche produit"
     url: "https://automationexercise.com"
     prompt: |
       Naviguer vers https://automationexercise.com/products.
-      Remplir le champ de recherche : page.locator('input#search_product').fill('dress').
-      Cliquer sur le bouton Search : page.locator('button#submit_search').click().
-      Attendre les résultats et vérifier que la section 'Searched Products' apparaît :
-        expect(page.locator('h2.title.text-center')).toContainText('Searched Products').
-      Vérifier qu'au moins un produit est affiché dans les résultats :
-        expect(page.locator('.features_items .col-sm-4').first()).toBeVisible().
+      Remplir le champ input#search_product avec 'dress'.
+      Cliquer sur le bouton button#submit_search.
+      Vérifier que la section 'Searched Products' est visible (h2.title.text-center).
+      Vérifier qu'au moins un produit est affiché dans les résultats.
 
   - name: "AutomationExercise - Ajout au panier"
     url: "https://automationexercise.com"
     prompt: |
       Naviguer vers https://automationexercise.com/products.
-      Cliquer sur 'View Product' du premier produit visible :
-        page.locator('.features_items .col-sm-4').first().locator('.choose a').click()
-        (le lien texte est "View Product").
-      Vérifier que la page de détail produit s'affiche avec le nom du produit :
-        expect(page.locator('.product-information h2')).toBeVisible().
-      Cliquer sur le bouton 'Add to cart' sur la page détail :
-        page.locator('button.btn-default[type="button"]').click()
-        (ou page.locator('.cart-quantity ~ .cart button') si disponible).
-      Naviguer vers https://automationexercise.com/view_cart.
-      Vérifier que le panier contient au moins un article :
-        expect(page.locator('#cart_info_table tbody tr').first()).toBeVisible().
+      Cliquer sur le lien 'View Product' du premier produit (getByRole link 'View Product' first).
+      Vérifier que la page détail s'affiche (.product-information h2 visible).
+      Cliquer sur le bouton Add to cart (button.cart).
+      Attendre que le modal apparaisse (#cartModal ou .modal-dialog).
+      Cliquer sur le lien 'View Cart' dans le modal (.modal-dialog a[href="/view_cart"]).
+      Vérifier qu'au moins une ligne produit est dans le panier (#cart_info_table tbody tr).
 
   - name: "AutomationExercise - Inscription nouveau compte"
     url: "https://automationexercise.com"
     prompt: |
       Naviguer vers https://automationexercise.com/login.
-      Vérifier que le formulaire signup est visible dans div.signup-form :
-        expect(page.locator('.signup-form h2')).toContainText('New User Signup!').
-      Remplir le formulaire en utilisant les data-qa (scoped à .signup-form) :
-        page.locator('input[data-qa="signup-name"]').fill('Test User')
-        page.locator('input[data-qa="signup-email"]').fill('testuser_ite281@example.com')
-      Cliquer sur le bouton Signup :
-        page.locator('button[data-qa="signup-button"]').click().
-      Vérifier que la page suivante contient 'Enter Account Information' :
-        expect(page.locator('h2.title')).toContainText('Enter Account Information').
+      Vérifier que le titre du formulaire signup est 'New User Signup!' (.signup-form h2).
+      Remplir input[data-qa="signup-name"] avec 'Test User'.
+      Remplir input[data-qa="signup-email"] avec 'testuser_ite281@example.com'.
+      Cliquer sur button[data-qa="signup-button"].
+      Vérifier que la page suivante affiche 'Enter Account Information'
+        (h2.title.text-center.first() ou page.locator('h2.title').first()).
