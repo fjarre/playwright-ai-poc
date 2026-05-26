@@ -45,6 +45,7 @@ Site cible : https://www.saucedemo.com (boutique e-commerce de démo, fournie pa
 - Cart
   - lignes          : [data-test="inventory-item"]
   - bouton checkout : [data-test="checkout"]
+  - IMPORTANT : /cart.html n'affiche PAS de total — le total est uniquement sur /checkout-step-two.html
 - Checkout step one
   - first name      : [data-test="firstName"]
   - last name       : [data-test="lastName"]
@@ -60,7 +61,7 @@ Site cible : https://www.saucedemo.com (boutique e-commerce de démo, fournie pa
 1. Toujours commencer par : import { test, expect } from '@playwright/test';
 2. Utiliser baseURL implicitement : page.goto('/').
 3. Encapsuler dans un test.describe() nommé d'après le scénario.
-4. Pour chaque action UI : utiliser un sélecteur [data-test=...] de la liste ci-dessus, jamais un sélecteur XPath ou CSS fragile.
+4. Pour chaque action UI : utiliser un sélecteur [data-test=...] de la liste ci-dessus, jamais un sélecteur XPath ou CSS fragile. Ne jamais construire un sélecteur dynamiquement (concaténation) — utiliser toujours un sélecteur statique connu (ex. [data-test="add-to-cart-sauce-labs-backpack"]).
 5. Pour les assertions : préférer expect(locator).toBeVisible(), .toHaveText(), .toHaveURL().
 6. Toujours exécuter un login propre en début de test (sauf scénario explicitement "post-login").
 7. Pas de timeout custom sauf nécessité ; les défauts Playwright suffisent.

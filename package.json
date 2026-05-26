@@ -2,7 +2,7 @@
   "name": "playwright-ai-poc",
   "version": "0.1.0",
   "private": false,
-  "description": "PoC: générer des tests Playwright à partir de prompts en langage naturel via Claude (Anthropic SDK).",
+  "description": "PoC: générer des tests Playwright à partir de prompts en langage naturel via IA (Claude ou GitHub Models).",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -11,12 +11,14 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "generate": "tsx src/cli.ts generate",
+    "generate:github": "tsx src/cli.ts generate --provider github",
     "generate:qtest": "tsx src/cli.ts qtest",
     "generate:scenarios": "tsx src/cli.ts scenarios",
     "test": "playwright test",
     "test:report": "playwright show-report",
     "demo": "tsx src/cli.ts generate --prompt \"Tester que le login fonctionne avec standard_user et secret_sauce\" --out tests/login.spec.ts && tsx src/cli.ts generate --prompt \"Verifier qu on peut ajouter un produit au panier et voir le total\" --out tests/add-to-cart.spec.ts && tsx src/cli.ts generate --prompt \"Tester le processus de checkout complet\" --out tests/checkout.spec.ts",
-    "demo:yaml": "tsx src/cli.ts scenarios -f test-scenarios/scenarios.yaml --out-dir tests/generated"
+    "demo:yaml": "tsx src/cli.ts scenarios -f test-scenarios/scenarios.yaml --out-dir tests/generated",
+    "demo:github": "tsx src/cli.ts generate --provider github --prompt \"Tester que le login fonctionne avec standard_user et secret_sauce\" --out tests/login.spec.ts && tsx src/cli.ts generate --provider github --prompt \"Verifier qu on peut ajouter un produit au panier et voir le total\" --out tests/add-to-cart.spec.ts && tsx src/cli.ts generate --provider github --prompt \"Tester le processus de checkout complet\" --out tests/checkout.spec.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
