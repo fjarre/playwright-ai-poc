@@ -1,8 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { buildSystemPrompt } from './system-prompt.js';
 
-const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6';
+const DEFAULT_ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6';
+const DEFAULT_GITHUB_MODEL = process.env.GITHUB_MODEL ?? 'gpt-4o-mini';
 const DEFAULT_URL = 'https://www.saucedemo.com';
+const GITHUB_MODELS_ENDPOINT = 'https://models.inference.ai.azure.com';
 
 export interface GenerateOptions {
   prompt: string;
@@ -18,13 +21,68 @@ export interface GenerateResult {
   cacheCreationInputTokens: number;
   cacheReadInputTokens: number;
   model: string;
+  provider: 'anthropic' | 'github';
 }
 
-const client = new Anthropic();
+function detectProvider(): 'anthropic' | 'github' {
+  if (process.env.GITHUB_TOKEN) return 'github';
+  if (process.env.ANTHROPIC_API_KEY) return 'anthropic';
+  throw new Error(
+    'Aucune clé API configurée. Définissez GITHUB_TOKEN (GitHub Models, gratuit) ou ANTHROPIC_API_KEY dans votre .env.',
+  );
+}
 
 export async function generateSpec(opts: GenerateOptions): Promise<GenerateResult> {
-  const model = opts.model ?? DEFAULT_MODEL;
+  const provider = detectProvider();
   const url = opts.url ?? DEFAULT_URL;
+  const systemPrompt = buildSystemPrompt(url);
+
+  if (provider === 'github') {
+    return generateWithGitHubModels(opts, systemPrompt);
+  }
+  return generateWithAnthropic(opts, systemPrompt);
+}
+
+async function generateWithGitHubModels(
+  opts: GenerateOptions,
+  systemPrompt: string,
+): Promise<GenerateResult> {
+  const model = opts.model ?? DEFAULT_GITHUB_MODEL;
+  const client = new OpenAI({
+    baseURL: GITHUB_MODELS_ENDPOINT,
+    apiKey: process.env.GITHUB_TOKEN,
+  });
+
+  const response = await client.chat.completions.create({
+    model,
+    max_tokens: opts.maxTokens ?? 2048,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      {
+        role: 'user',
+        content: `Génère un test Playwright pour ce scénario :\n\n${opts.prompt}`,
+      },
+    ],
+  });
+
+  const raw = response.choices[0]?.message?.content?.trim() ?? '';
+  return {
+    code: stripCodeFences(raw),
+    inputTokens: response.usage?.prompt_tokens ?? 0,
+    outputTokens: response.usage?.completion_tokens ?? 0,
+    cacheCreationInputTokens: 0,
+    cacheReadInputTokens: 0,
+    model: response.model,
+    provider: 'github',
+  };
+}
+
+async function generateWithAnthropic(
+  opts: GenerateOptions,
+  systemPrompt: string,
+): Promise<GenerateResult> {
+  const model = opts.model ?? DEFAULT_ANTHROPIC_MODEL;
+  const client = new Anthropic();
 
   const response = await client.messages.create({
     model,
@@ -32,7 +90,7 @@ export async function generateSpec(opts: GenerateOptions): Promise<GenerateResul
     system: [
       {
         type: 'text',
-        text: buildSystemPrompt(url),
+        text: systemPrompt,
         cache_control: { type: 'ephemeral' },
       },
     ],
@@ -56,6 +114,7 @@ export async function generateSpec(opts: GenerateOptions): Promise<GenerateResul
     cacheCreationInputTokens: response.usage.cache_creation_input_tokens ?? 0,
     cacheReadInputTokens: response.usage.cache_read_input_tokens ?? 0,
     model: response.model,
+    provider: 'anthropic',
   };
 }
 

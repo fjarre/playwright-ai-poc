@@ -22,17 +22,15 @@ program
   .requiredOption('-p, --prompt <text>', 'Description du scénario en langage naturel')
   .option('-u, --url <url>', 'URL de l\'application cible', 'https://www.saucedemo.com')
   .option('-o, --out <path>', 'Chemin de sortie du fichier .spec.ts', 'tests/generated.spec.ts')
-  .option('-m, --model <model>', 'Modèle Anthropic à utiliser')
+  .option('-m, --model <model>', 'Modèle à utiliser (GitHub Models ou Anthropic)')
   .action(async (opts: { prompt: string; url: string; out: string; model?: string }) => {
     requireApiKey();
-    process.stdout.write(`→ Génération via Claude (${opts.model ?? 'défaut'})...\n`);
     const result = await generateSpec({ prompt: opts.prompt, url: opts.url, model: opts.model });
     await writeOut(opts.out, result.code);
     process.stdout.write(
       `✓ Écrit : ${opts.out}\n` +
-        `  Modèle : ${result.model}\n` +
-        `  Tokens in/out : ${result.inputTokens}/${result.outputTokens}\n` +
-        `  Cache create/read : ${result.cacheCreationInputTokens}/${result.cacheReadInputTokens}\n`,
+        `  Provider : ${result.provider} | Modèle : ${result.model}\n` +
+        `  Tokens in/out : ${result.inputTokens}/${result.outputTokens}\n`,
     );
   });
 
@@ -41,7 +39,7 @@ program
   .description('Générer des tests Playwright depuis un fichier YAML multi-scénarios.')
   .requiredOption('-f, --file <path>', 'Fichier YAML de scénarios en entrée')
   .option('-o, --out-dir <dir>', 'Répertoire de sortie des fichiers .spec.ts', 'tests/generated')
-  .option('-m, --model <model>', 'Modèle Anthropic à utiliser')
+  .option('-m, --model <model>', 'Modèle à utiliser (GitHub Models ou Anthropic)')
   .action(async (opts: { file: string; outDir: string; model?: string }) => {
     requireApiKey();
     const { scenarios } = await readScenariosFile(opts.file);
@@ -61,7 +59,7 @@ program
         const outPath = resolve(opts.outDir, `${slug}.spec.ts`);
         await writeOut(outPath, result.code);
         process.stdout.write(
-          `    ✓ ${outPath}  (cache read : ${result.cacheReadInputTokens})\n`,
+          `    ✓ ${outPath}  [${result.provider}/${result.model}  in:${result.inputTokens} out:${result.outputTokens}]\n`,
         );
         ok++;
       } catch (err) {
@@ -108,9 +106,12 @@ async function writeOut(path: string, content: string) {
 }
 
 function requireApiKey() {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.GITHUB_TOKEN && !process.env.ANTHROPIC_API_KEY) {
     process.stderr.write(
-      '✗ ANTHROPIC_API_KEY est manquante. Copiez .env.example en .env et renseignez la clé.\n',
+      '✗ Aucune clé API configurée.\n' +
+        '  Option A (gratuit) : définissez GITHUB_TOKEN dans .env (GitHub Models).\n' +
+        '  Option B : définissez ANTHROPIC_API_KEY dans .env.\n' +
+        '  Copiez .env.example en .env pour démarrer.\n',
     );
     process.exit(2);
   }
