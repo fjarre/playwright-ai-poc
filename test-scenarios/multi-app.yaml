@@ -1,0 +1,81 @@
+# Pipeline multi-applications — ITE-281
+# 4 scénarios JPetStore + 4 scénarios AutomationExercise (e-commerce)
+# Lancé via : npm run generate:scenarios -- -f test-scenarios/multi-app.yaml
+
+scenarios:
+
+  # ─────────────────────────────────────────────────────────────────
+  # Application 1 : JPetStore (https://jpetstore.octoperf.com)
+  # Store de démo Java EE — animaux de compagnie
+  # ─────────────────────────────────────────────────────────────────
+  - name: "JPetStore - Parcourir le catalogue"
+    url: "https://jpetstore.octoperf.com"
+    prompt: |
+      Naviguer vers la page d'accueil de JPetStore (https://jpetstore.octoperf.com/actions/Catalog.action).
+      Vérifier que la page s'affiche avec le titre 'JPetStore Demo' ou 'JPetStore'.
+      Cliquer sur la catégorie 'FISH' dans le menu ou les bannières du catalogue.
+      Vérifier que la liste des sous-catégories ou produits poissons s'affiche (ex: Angelfish, Tiger Shark, etc.).
+
+  - name: "JPetStore - Recherche produit"
+    url: "https://jpetstore.octoperf.com"
+    prompt: |
+      Naviguer vers la page d'accueil de JPetStore (https://jpetstore.octoperf.com/actions/Catalog.action).
+      Utiliser le champ de recherche (keyword search) pour chercher 'fish'.
+      Vérifier que les résultats de recherche s'affichent avec au moins un produit contenant 'fish' dans le nom.
+      Cliquer sur un produit dans les résultats et vérifier que la page détail s'affiche avec un prix.
+
+  - name: "JPetStore - Inscription et login"
+    url: "https://jpetstore.octoperf.com"
+    prompt: |
+      Naviguer vers la page de login de JPetStore (https://jpetstore.octoperf.com/actions/Account.action?signonForm=).
+      Remplir le formulaire avec username 'j2ee' et password 'j2ee' (compte de démo).
+      Cliquer sur le bouton de connexion.
+      Vérifier que l'utilisateur est connecté (message de bienvenue ou lien 'Sign Off' visible).
+
+  - name: "JPetStore - Ajout au panier"
+    url: "https://jpetstore.octoperf.com"
+    prompt: |
+      Naviguer vers la page d'accueil de JPetStore (https://jpetstore.octoperf.com/actions/Catalog.action).
+      Se connecter avec username 'j2ee' et password 'j2ee'.
+      Accéder à la catégorie FISH puis cliquer sur un produit (ex: Angelfish).
+      Cliquer sur 'Add to Cart' pour un item.
+      Vérifier que le panier affiche 1 article et que le sous-total est visible.
+
+  # ─────────────────────────────────────────────────────────────────
+  # Application 2 : AutomationExercise (https://automationexercise.com)
+  # Site e-commerce de pratique pour l'automatisation de tests
+  # ─────────────────────────────────────────────────────────────────
+  - name: "AutomationExercise - Homepage et navigation"
+    url: "https://automationexercise.com"
+    prompt: |
+      Naviguer vers https://automationexercise.com.
+      Vérifier que la homepage s'affiche avec le logo 'Automation Exercise'.
+      Vérifier que la barre de navigation contient les liens Home, Products, Cart, Signup/Login.
+      Cliquer sur 'Products' et vérifier que la liste de produits s'affiche avec au moins 5 produits.
+
+  - name: "AutomationExercise - Recherche produit"
+    url: "https://automationexercise.com"
+    prompt: |
+      Naviguer vers https://automationexercise.com/products.
+      Utiliser le champ de recherche pour chercher 'dress'.
+      Cliquer sur le bouton Search.
+      Vérifier que la section 'Searched Products' s'affiche avec des résultats contenant 'dress' dans le nom.
+      Vérifier qu'au moins un produit est affiché dans les résultats.
+
+  - name: "AutomationExercise - Ajout au panier"
+    url: "https://automationexercise.com"
+    prompt: |
+      Naviguer vers https://automationexercise.com/products.
+      Survoler le premier produit visible et cliquer sur 'Add to cart'.
+      Confirmer l'ajout dans la popup modale en cliquant 'Continue Shopping' ou 'View Cart'.
+      Naviguer vers le panier (https://automationexercise.com/view_cart).
+      Vérifier que le produit apparaît dans le panier avec son nom, prix et quantité.
+
+  - name: "AutomationExercise - Inscription nouveau compte"
+    url: "https://automationexercise.com"
+    prompt: |
+      Naviguer vers https://automationexercise.com/login.
+      Vérifier que le formulaire 'New User Signup!' est visible avec les champs Name et Email Address.
+      Remplir le formulaire avec name 'Test User' et email 'testuser_ite281@example.com'.
+      Cliquer sur le bouton 'Signup'.
+      Vérifier que la page de détails du compte s'affiche avec le titre 'Enter Account Information'.
