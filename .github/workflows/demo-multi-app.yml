@@ -20,6 +20,7 @@ on:
 permissions:
   contents: read
   models: read
+  checks: write
 
 jobs:
   generate-and-test:
@@ -67,16 +68,36 @@ jobs:
       - name: Exécuter les tests Playwright (multi-app)
         env:
           CI: true
-        run: npx playwright test tests/multi-app/ --reporter=list,html
+        run: npx playwright test tests/multi-app/ --reporter=list,html,"junit:outputFile=test-results/junit.xml"
         continue-on-error: true
 
-      - name: Upload rapport Playwright
+      - name: Publier résultats de tests (GitHub Checks)
+        if: always()
+        uses: mikepenz/action-junit-report@v4
+        with:
+          report_paths: "test-results/junit.xml"
+          check_name: "Playwright — Multi-App Results"
+          fail_on_failure: false
+          include_passed: true
+          detailed_summary: true
+          annotate_only: false
+
+      - name: Upload rapport Playwright HTML
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-multi-app-${{ github.run_number }}
           path: playwright-report/
           retention-days: 14
+
+      - name: Upload screenshots des tests échoués
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failures-${{ github.run_number }}
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Résumé
         if: always()
@@ -86,13 +107,20 @@ jobs:
           echo "**Modèle :** \`$GITHUB_MODEL\`" >> $GITHUB_STEP_SUMMARY
           echo "**Fichier scénarios :** \`${{ github.event.inputs.scenarios_file || 'test-scenarios/multi-app.yaml' }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Specs générés :**" >> $GITHUB_STEP_SUMMARY
+          SPECS=$(ls tests/multi-app/*.spec.ts 2>/dev/null | wc -l)
+          echo "**${SPECS} specs générés :**" >> $GITHUB_STEP_SUMMARY
           for f in tests/multi-app/*.spec.ts; do
-            echo "- \`$f\`" >> $GITHUB_STEP_SUMMARY
+            echo "- \`$(basename $f)\`" >> $GITHUB_STEP_SUMMARY
           done
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Applications testées :**" >> $GITHUB_STEP_SUMMARY
           echo "- JPetStore (https://jpetstore.octoperf.com) — 4 scénarios" >> $GITHUB_STEP_SUMMARY
           echo "- AutomationExercise (https://automationexercise.com) — 4 scénarios" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f test-results/junit.xml ]; then
+            PASSED=$(grep -o 'tests="[0-9]*"' test-results/junit.xml | head -1 | grep -o '[0-9]*' || echo "?")
+            FAILED=$(grep -o 'failures="[0-9]*"' test-results/junit.xml | head -1 | grep -o '[0-9]*' || echo "?")
+            echo "**Résultats Playwright :** ${PASSED} tests, ${FAILED} échec(s)" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "> Aucun secret externe requis — utilise uniquement GITHUB_TOKEN." >> $GITHUB_STEP_SUMMARY
