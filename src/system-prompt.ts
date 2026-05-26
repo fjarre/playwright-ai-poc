@@ -91,37 +91,40 @@ Site cible : https://demowebshop.tricentis.com (NopCommerce — boutique e-comme
 
 # Sélecteurs canoniques OBLIGATOIRES
 - Navigation top menu      : page.locator('.top-menu a[href="/books"]')  (adapter href selon catégorie)
-- Liste produits           : page.locator('.product-grid .item-box')
-- Titre produit (liste)    : page.locator('.product-grid .item-box .product-title a').first()
-- Prix produit (liste)     : page.locator('.product-grid .item-box .actual-price').first()
-- Lien produit (detail)    : cliquer sur .product-title a pour aller au détail
-- Prix produit (détail)    : page.locator('.actual-price')
-- Add to cart (détail)     : page.locator('input[value="Add to cart"]').first()
-- Badge panier header      : page.locator('.cart-qty')  — contient "(N)" ex. "(1)"
-- Champ recherche          : page.locator('input#small-searchterms')   ← OBLIGATOIRE, ne pas utiliser getByRole
-- Soumettre recherche      : page.keyboard.press('Enter') après avoir rempli le champ
-- Page résultats           : attendre page.locator('.product-grid .item-box').first()
+- Premier produit de la liste  : page.locator('.product-grid .item-box').first()   ← TOUJOURS .first()
+- Titre produit (liste)        : page.locator('.product-grid .item-box .product-title a').first()
+- Prix produit (liste)         : page.locator('.product-grid .item-box .actual-price').first()
+- Lien produit (detail)        : cliquer sur .product-title a pour aller au détail
+- Prix produit (détail)        : page.locator('.actual-price').first()
+- Add to cart (détail)         : page.locator('input[value="Add to cart"]').first()
+- Badge panier header          : page.locator('.cart-qty')  — contient "(N)" ex. "(1)"
+- Champ recherche              : page.locator('input#small-searchterms')   ← OBLIGATOIRE, ne pas utiliser getByRole
+- Soumettre recherche          : page.keyboard.press('Enter') après avoir rempli le champ
+- Page résultats (vérif)       : await expect(page.locator('.product-grid .item-box').first()).toBeVisible()
 - Register form
-  - Prénom                 : page.locator('#FirstName')
-  - Nom                    : page.locator('#LastName')
-  - Email                  : page.locator('#Email')
-  - Password               : page.locator('#Password')
-  - Confirm password       : page.locator('#ConfirmPassword')
-  - Bouton Register        : page.locator('input[value="Register"]')
-  - Confirmation           : page.getByText('Your registration completed')
+  - Prénom                     : page.locator('#FirstName')
+  - Nom                        : page.locator('#LastName')
+  - Email (UNIQUE requis)      : const email = \`test\${Date.now()}@mailinator.com\`; puis page.locator('#Email').fill(email)
+  - Password                   : page.locator('#Password')
+  - Confirm password           : page.locator('#ConfirmPassword')
+  - Bouton Register            : page.locator('input[value="Register"]')
+  - Confirmation               : page.getByText('Your registration completed')
 - Panier (/cart)
-  - Lignes produits        : page.locator('.cart > tbody > tr')
-  - Total commande         : page.locator('.cart-total')
+  - Lignes produits            : page.locator('.cart > tbody > tr').first()
+  - Total commande             : page.locator('.cart-total')
 
 # Règles CRITIQUES
 1. TOUJOURS commencer par : import { test, expect } from '@playwright/test';
-2. TOUJOURS utiliser : await expect(locator).toBeVisible() — jamais expect(await locator).toBeVisible()
+2. TOUJOURS utiliser : await expect(locator).toBeVisible() — JAMAIS expect(await locator).toBeVisible()
 3. Utiliser EXACTEMENT les sélecteurs CSS listés ci-dessus — ne pas inventer de sélecteurs
 4. Pour la recherche : OBLIGATOIREMENT page.locator('input#small-searchterms').fill('terme') puis page.keyboard.press('Enter')
 5. Pour les assertions sur le panier badge : await expect(page.locator('.cart-qty')).not.toHaveText('(0)')
-6. Encapsuler dans test.describe() nommé d'après le scénario
-7. Pas de console.log, pas de commentaires verbeux
-8. Format de sortie : code TypeScript brut uniquement. Aucune balise \`\`\`.
+6. INTERDIT : toHaveCountGreaterThan — cette méthode N'EXISTE PAS dans Playwright. Utiliser .first().toBeVisible() à la place.
+7. INTERDIT : toBeVisible() sur un locator sans .first() si plusieurs éléments peuvent matcher — toujours ajouter .first()
+8. TOUJOURS utiliser un email unique pour Register : const email = \`test\${Date.now()}@mailinator.com\`;
+9. Encapsuler dans test.describe() nommé d'après le scénario
+10. Pas de console.log, pas de commentaires verbeux
+11. Format de sortie : code TypeScript brut uniquement. Aucune balise \`\`\`.
 
 # Format final
 Tu retournes seulement le code .spec.ts. Rien d'autre.`;

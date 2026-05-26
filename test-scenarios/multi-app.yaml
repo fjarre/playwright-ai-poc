@@ -52,7 +52,7 @@ scenarios:
   - name: "DemoWebShop - Panier et récapitulatif de commande"
     url: "https://demowebshop.tricentis.com"
     prompt: |
-      Naviguer vers https://demowebshop.tricentis.com/electronics/camera-photo.
+      Naviguer vers https://demowebshop.tricentis.com/books.
       Vérifier qu'au moins un produit est visible dans .product-grid .item-box.
       Cliquer sur le titre du premier produit (.product-grid .item-box .product-title a).
       Cliquer sur le bouton Add to cart (input[value="Add to cart"]).
