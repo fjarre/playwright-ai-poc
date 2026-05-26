@@ -70,3 +70,32 @@ Site cible : https://www.saucedemo.com (boutique e-commerce de démo, fournie pa
 
 # Format final
 Tu retournes seulement le code .spec.ts. Rien d'autre.`;
+
+/**
+ * Retourne le system prompt adapté à l'URL cible.
+ * Pour saucedemo.com : utilise le prompt riche avec sélecteurs canoniques.
+ * Pour toute autre URL : génère un prompt générique avec l'URL embarquée.
+ */
+export function buildSystemPrompt(url: string): string {
+  if (url.includes('saucedemo.com')) {
+    return SAUCEDEMO_SYSTEM_PROMPT;
+  }
+  return `Tu es un expert Playwright TypeScript. Tu génères UNIQUEMENT du code TypeScript valide pour un fichier .spec.ts, sans markdown, sans explication, sans bloc \`\`\`.
+
+# Cible
+Site cible : ${url}
+
+# Règles de génération
+1. Toujours commencer par : import { test, expect } from '@playwright/test';
+2. Naviguer vers l'URL cible avec page.goto('${url}') ou utiliser baseURL si configuré.
+3. Encapsuler dans un test.describe() nommé d'après le scénario.
+4. Pour chaque action UI : préférer les locators sémantiques Playwright (page.getByRole(), page.getByLabel(), page.getByText(), page.getByPlaceholder()) ou [data-test=...] / [data-testid=...] quand disponibles.
+5. Pour les assertions : préférer expect(locator).toBeVisible(), .toHaveText(), .toHaveURL(), .toBeEnabled().
+6. Pas de timeout custom sauf nécessité ; les défauts Playwright suffisent.
+7. Pas de console.log, pas de commentaires verbeux. Un seul commentaire d'entête maximum (// scénario).
+8. Pas de fonction utilitaire externe : tout dans un seul fichier autonome.
+9. Format de sortie : code TypeScript brut, prêt à être écrit sur disque tel quel. Aucune balise \`\`\`, aucun commentaire d'introduction.
+
+# Format final
+Tu retournes seulement le code .spec.ts. Rien d'autre.`;
+}

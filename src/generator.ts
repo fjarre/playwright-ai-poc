@@ -1,10 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { SAUCEDEMO_SYSTEM_PROMPT } from './system-prompt.js';
+import { buildSystemPrompt } from './system-prompt.js';
 
 const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6';
+const DEFAULT_URL = 'https://www.saucedemo.com';
 
 export interface GenerateOptions {
   prompt: string;
+  url?: string;
   model?: string;
   maxTokens?: number;
 }
@@ -22,6 +24,7 @@ const client = new Anthropic();
 
 export async function generateSpec(opts: GenerateOptions): Promise<GenerateResult> {
   const model = opts.model ?? DEFAULT_MODEL;
+  const url = opts.url ?? DEFAULT_URL;
 
   const response = await client.messages.create({
     model,
@@ -29,7 +32,7 @@ export async function generateSpec(opts: GenerateOptions): Promise<GenerateResul
     system: [
       {
         type: 'text',
-        text: SAUCEDEMO_SYSTEM_PROMPT,
+        text: buildSystemPrompt(url),
         cache_control: { type: 'ephemeral' },
       },
     ],

@@ -12,14 +12,17 @@
     "build": "tsc -p tsconfig.json",
     "generate": "tsx src/cli.ts generate",
     "generate:qtest": "tsx src/cli.ts qtest",
+    "generate:scenarios": "tsx src/cli.ts scenarios",
     "test": "playwright test",
     "test:report": "playwright show-report",
-    "demo": "tsx src/cli.ts generate --prompt \"Tester que le login fonctionne avec standard_user et secret_sauce\" --out tests/login.spec.ts && tsx src/cli.ts generate --prompt \"Verifier qu on peut ajouter un produit au panier et voir le total\" --out tests/add-to-cart.spec.ts && tsx src/cli.ts generate --prompt \"Tester le processus de checkout complet\" --out tests/checkout.spec.ts"
+    "demo": "tsx src/cli.ts generate --prompt \"Tester que le login fonctionne avec standard_user et secret_sauce\" --out tests/login.spec.ts && tsx src/cli.ts generate --prompt \"Verifier qu on peut ajouter un produit au panier et voir le total\" --out tests/add-to-cart.spec.ts && tsx src/cli.ts generate --prompt \"Tester le processus de checkout complet\" --out tests/checkout.spec.ts",
+    "demo:yaml": "tsx src/cli.ts scenarios -f test-scenarios/scenarios.yaml --out-dir tests/generated"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "commander": "^12.1.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",

@@ -1,0 +1,45 @@
+# Scénarios de test Playwright x AI — format YAML multi-scénarios
+#
+# Format : chaque scénario contient trois champs obligatoires :
+#   name   : nom lisible du scénario (utilisé pour nommer le fichier .spec.ts généré)
+#   url    : URL de l'application à tester (peut être différente par scénario)
+#   prompt : instruction en langage naturel décrivant le comportement à tester
+#
+# Nombre de scénarios illimité.
+# Exécution : npm run generate:scenarios -- -f test-scenarios/scenarios.yaml
+
+scenarios:
+  # --- Migration des 3 slots de démo originaux (ITE-281 rétrocompatibilité) ---
+  - name: "Login standard"
+    url: "https://www.saucedemo.com"
+    prompt: "Tester que le login fonctionne avec standard_user et secret_sauce"
+
+  - name: "Ajout au panier"
+    url: "https://www.saucedemo.com"
+    prompt: "Verifier qu on peut ajouter un produit au panier et voir le total"
+
+  - name: "Checkout complet"
+    url: "https://www.saucedemo.com"
+    prompt: "Tester le processus de checkout complet"
+
+  # --- Scénarios additionnels issus de scenarios.json (ITE-257) ---
+  - name: "Login credentials invalides"
+    url: "https://www.saucedemo.com"
+    prompt: "Verifier qu'un message d'erreur s'affiche quand on tente de se connecter avec invalid_user et wrong_password"
+
+  - name: "Tri catalogue produits"
+    url: "https://www.saucedemo.com"
+    prompt: "Verifier la navigation dans le catalogue et le tri des produits par prix croissant et par nom décroissant"
+
+  - name: "Suppression article du panier"
+    url: "https://www.saucedemo.com"
+    prompt: "Verifier qu'un produit peut être supprimé du panier et que le badge du panier disparaît"
+
+  - name: "Logout et protection pages"
+    url: "https://www.saucedemo.com"
+    prompt: "Verifier que le logout fonctionne et que l'accès direct à /inventory.html sans session redirige vers le login"
+
+  # --- Exemple multi-URL : tester une autre application ---
+  # - name: "Test homepage Itecor"
+  #   url: "https://www.itecor.com"
+  #   prompt: "Vérifier que la homepage s'affiche correctement avec le titre et le menu de navigation"

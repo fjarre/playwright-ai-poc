@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { config as loadEnv } from 'dotenv';
 import { generateSpec } from './generator.js';
 import { readQTestFile, generateFromQTest } from './qtest.js';
+import { readScenariosFile, scenarioToSlug } from './yaml-runner.js';
 
 loadEnv();
 
@@ -19,12 +20,13 @@ program
   .command('generate')
   .description('Générer un test Playwright depuis un prompt en langage naturel.')
   .requiredOption('-p, --prompt <text>', 'Description du scénario en langage naturel')
+  .option('-u, --url <url>', 'URL de l\'application cible', 'https://www.saucedemo.com')
   .option('-o, --out <path>', 'Chemin de sortie du fichier .spec.ts', 'tests/generated.spec.ts')
   .option('-m, --model <model>', 'Modèle Anthropic à utiliser')
-  .action(async (opts: { prompt: string; out: string; model?: string }) => {
+  .action(async (opts: { prompt: string; url: string; out: string; model?: string }) => {
     requireApiKey();
     process.stdout.write(`→ Génération via Claude (${opts.model ?? 'défaut'})...\n`);
-    const result = await generateSpec({ prompt: opts.prompt, model: opts.model });
+    const result = await generateSpec({ prompt: opts.prompt, url: opts.url, model: opts.model });
     await writeOut(opts.out, result.code);
     process.stdout.write(
       `✓ Écrit : ${opts.out}\n` +
@@ -32,6 +34,44 @@ program
         `  Tokens in/out : ${result.inputTokens}/${result.outputTokens}\n` +
         `  Cache create/read : ${result.cacheCreationInputTokens}/${result.cacheReadInputTokens}\n`,
     );
+  });
+
+program
+  .command('scenarios')
+  .description('Générer des tests Playwright depuis un fichier YAML multi-scénarios.')
+  .requiredOption('-f, --file <path>', 'Fichier YAML de scénarios en entrée')
+  .option('-o, --out-dir <dir>', 'Répertoire de sortie des fichiers .spec.ts', 'tests/generated')
+  .option('-m, --model <model>', 'Modèle Anthropic à utiliser')
+  .action(async (opts: { file: string; outDir: string; model?: string }) => {
+    requireApiKey();
+    const { scenarios } = await readScenariosFile(opts.file);
+    process.stdout.write(`→ ${scenarios.length} scénario(s) à générer depuis ${opts.file}\n`);
+    let ok = 0;
+    let failed = 0;
+    for (const [i, scenario] of scenarios.entries()) {
+      const prefix = `  [${i + 1}/${scenarios.length}] "${scenario.name}"`;
+      process.stdout.write(`${prefix} → ${scenario.url}\n`);
+      try {
+        const result = await generateSpec({
+          prompt: scenario.prompt,
+          url: scenario.url,
+          model: opts.model,
+        });
+        const slug = scenarioToSlug(scenario.name);
+        const outPath = resolve(opts.outDir, `${slug}.spec.ts`);
+        await writeOut(outPath, result.code);
+        process.stdout.write(
+          `    ✓ ${outPath}  (cache read : ${result.cacheReadInputTokens})\n`,
+        );
+        ok++;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        process.stderr.write(`    ✗ Erreur : ${msg}\n`);
+        failed++;
+      }
+    }
+    process.stdout.write(`\n→ ${ok} générés, ${failed} erreurs.\n`);
+    if (failed > 0) process.exit(1);
   });
 
 program
