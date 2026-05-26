@@ -1,45 +1,62 @@
 # Pipeline multi-applications — ITE-281
-# 4 scénarios JPetStore + 4 scénarios AutomationExercise (e-commerce)
+# 5 scénarios DemoWebShop (Tricentis) + 4 scénarios AutomationExercise
 # Lancé via : npm run generate:scenarios -- -f test-scenarios/multi-app.yaml
 
 scenarios:
 
   # ─────────────────────────────────────────────────────────────────
-  # Application 1 : JPetStore (https://jpetstore.octoperf.com)
-  # Store de démo Java EE — animaux de compagnie
+  # Application 1 : DemoWebShop by Tricentis (https://demowebshop.tricentis.com)
+  # Site e-commerce de démonstration .NET / NopCommerce
   # ─────────────────────────────────────────────────────────────────
-  - name: "JPetStore - Parcourir le catalogue"
-    url: "https://jpetstore.octoperf.com"
+  - name: "DemoWebShop - Homepage et navigation par catégorie"
+    url: "https://demowebshop.tricentis.com"
     prompt: |
-      Naviguer vers la page d'accueil de JPetStore (https://jpetstore.octoperf.com/actions/Catalog.action).
-      Vérifier que la page s'affiche avec le titre 'JPetStore Demo' ou 'JPetStore'.
-      Cliquer sur la catégorie 'FISH' dans le menu ou les bannières du catalogue.
-      Vérifier que la liste des sous-catégories ou produits poissons s'affiche (ex: Angelfish, Tiger Shark, etc.).
+      Naviguer vers https://demowebshop.tricentis.com/.
+      Vérifier que la page d'accueil s'affiche avec le titre 'Demo Web Shop'.
+      Vérifier que la barre de navigation principale contient au moins les catégories 'Books' et 'Computers'.
+      Cliquer sur la catégorie 'Books'.
+      Vérifier que la page liste de produits Books s'affiche avec au moins un produit visible.
 
-  - name: "JPetStore - Recherche produit"
-    url: "https://jpetstore.octoperf.com"
+  - name: "DemoWebShop - Recherche de produit"
+    url: "https://demowebshop.tricentis.com"
     prompt: |
-      Naviguer vers la page d'accueil de JPetStore (https://jpetstore.octoperf.com/actions/Catalog.action).
-      Utiliser le champ de recherche (keyword search) pour chercher 'fish'.
-      Vérifier que les résultats de recherche s'affichent avec au moins un produit contenant 'fish' dans le nom.
-      Cliquer sur un produit dans les résultats et vérifier que la page détail s'affiche avec un prix.
+      Naviguer vers https://demowebshop.tricentis.com/.
+      Utiliser le champ de recherche (input#small-searchterms ou champ de recherche du header) pour chercher 'computer'.
+      Soumettre la recherche (touche Entrée ou bouton Search).
+      Vérifier que la page de résultats s'affiche avec au moins un produit dont le nom contient 'computer' ou 'laptop' ou 'notebook'.
+      Vérifier que le nombre de résultats est affiché.
 
-  - name: "JPetStore - Inscription et login"
-    url: "https://jpetstore.octoperf.com"
+  - name: "DemoWebShop - Ajout au panier depuis la liste"
+    url: "https://demowebshop.tricentis.com"
     prompt: |
-      Naviguer vers la page de login de JPetStore (https://jpetstore.octoperf.com/actions/Account.action?signonForm=).
-      Remplir le formulaire avec username 'j2ee' et password 'j2ee' (compte de démo).
-      Cliquer sur le bouton de connexion.
-      Vérifier que l'utilisateur est connecté (message de bienvenue ou lien 'Sign Off' visible).
+      Naviguer vers https://demowebshop.tricentis.com/books.
+      Attendre que la liste de produits Books soit visible.
+      Cliquer sur le premier produit de la liste pour accéder à sa page détail.
+      Vérifier que le prix est visible sur la page détail.
+      Cliquer sur le bouton 'Add to cart'.
+      Vérifier que le compteur du panier dans le header (lien Shopping cart avec nombre d'articles) est mis à jour (ex: (1)).
 
-  - name: "JPetStore - Ajout au panier"
-    url: "https://jpetstore.octoperf.com"
+  - name: "DemoWebShop - Inscription d'un nouveau compte"
+    url: "https://demowebshop.tricentis.com"
     prompt: |
-      Naviguer vers la page d'accueil de JPetStore (https://jpetstore.octoperf.com/actions/Catalog.action).
-      Se connecter avec username 'j2ee' et password 'j2ee'.
-      Accéder à la catégorie FISH puis cliquer sur un produit (ex: Angelfish).
-      Cliquer sur 'Add to Cart' pour un item.
-      Vérifier que le panier affiche 1 article et que le sous-total est visible.
+      Naviguer vers https://demowebshop.tricentis.com/register.
+      Vérifier que le formulaire d'inscription est visible avec les champs First name, Last name, Email, Password.
+      Remplir le formulaire : First name 'Test', Last name 'User', Email 'testuser.ite281@mailinator.com',
+      Password 'Test1234!', Confirm password 'Test1234!'.
+      Cocher la case 'Female' ou 'Male' si présente.
+      Cliquer sur le bouton 'Register'.
+      Vérifier qu'un message de confirmation s'affiche (ex: 'Your registration completed' ou redirection vers la homepage avec utilisateur connecté).
+
+  - name: "DemoWebShop - Panier et récapitulatif de commande"
+    url: "https://demowebshop.tricentis.com"
+    prompt: |
+      Naviguer vers https://demowebshop.tricentis.com/electronics/camera-photo.
+      Attendre que la liste de produits soit visible.
+      Cliquer sur le premier produit de la liste.
+      Cliquer sur 'Add to cart' sur la page détail du produit.
+      Naviguer vers https://demowebshop.tricentis.com/cart.
+      Vérifier que le panier n'est pas vide : au moins une ligne produit est visible avec nom, prix et quantité.
+      Vérifier que le sous-total (Sub-Total ou Order Total) est affiché.
 
   # ─────────────────────────────────────────────────────────────────
   # Application 2 : AutomationExercise (https://automationexercise.com)
@@ -66,10 +83,12 @@ scenarios:
     url: "https://automationexercise.com"
     prompt: |
       Naviguer vers https://automationexercise.com/products.
-      Survoler le premier produit visible et cliquer sur 'Add to cart'.
-      Confirmer l'ajout dans la popup modale en cliquant 'Continue Shopping' ou 'View Cart'.
-      Naviguer vers le panier (https://automationexercise.com/view_cart).
-      Vérifier que le produit apparaît dans le panier avec son nom, prix et quantité.
+      Localiser le premier produit visible dans la liste.
+      Utiliser page.locator('.product-image-wrapper').first() pour identifier le premier produit.
+      Cliquer sur le lien 'View Product' du premier produit pour accéder à sa page détail.
+      Sur la page détail, cliquer sur le bouton 'Add to cart'.
+      Naviguer vers https://automationexercise.com/view_cart.
+      Vérifier que le produit apparaît dans le panier avec son nom et son prix.
 
   - name: "AutomationExercise - Inscription nouveau compte"
     url: "https://automationexercise.com"

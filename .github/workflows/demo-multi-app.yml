@@ -115,7 +115,7 @@ jobs:
           done
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Applications testées :**" >> $GITHUB_STEP_SUMMARY
-          echo "- JPetStore (https://jpetstore.octoperf.com) — 4 scénarios" >> $GITHUB_STEP_SUMMARY
+          echo "- DemoWebShop Tricentis (https://demowebshop.tricentis.com) — 5 scénarios" >> $GITHUB_STEP_SUMMARY
           echo "- AutomationExercise (https://automationexercise.com) — 4 scénarios" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ -f test-results/junit.xml ]; then
