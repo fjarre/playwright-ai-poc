@@ -68,7 +68,8 @@ jobs:
       - name: Exécuter les tests Playwright (multi-app)
         env:
           CI: true
-        run: npx playwright test tests/multi-app/ --reporter=list,html,"junit:outputFile=test-results/junit.xml"
+          PLAYWRIGHT_JUNIT_OUTPUT_NAME: test-results/junit.xml
+        run: npx playwright test tests/multi-app/ --reporter=list,html,junit
         continue-on-error: true
 
       - name: Publier résultats de tests (GitHub Checks)
