@@ -12,9 +12,10 @@ export default defineConfig({
   ],
   use: {
     baseURL: 'https://www.saucedemo.com',
-    trace: 'retain-on-failure',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    // En CI : trace + vidéo pour tous les tests → rapport HTML complet avec lecture pas-à-pas
+    trace: process.env.CI ? 'on' : 'retain-on-failure',
+    screenshot: 'on',
+    video: process.env.CI ? 'on' : 'retain-on-failure',
   },
   projects: [
     {
