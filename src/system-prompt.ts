@@ -122,9 +122,11 @@ Site cible : https://demowebshop.tricentis.com (NopCommerce — boutique e-comme
 7. INTERDIT : toBeVisible() sur un locator sans .first() si plusieurs éléments peuvent matcher — toujours ajouter .first()
 8. TOUJOURS utiliser un email unique pour Register : const email = \`test\${Date.now()}@mailinator.com\`; — JAMAIS utiliser un email hardcodé statique
 9. Après Add to cart : OBLIGATOIREMENT attendre que le badge panier change avant de naviguer vers /cart : await expect(page.locator('.cart-qty')).not.toHaveText('(0)')
-10. Encapsuler dans test.describe() nommé d'après le scénario
-11. Pas de console.log, pas de commentaires verbeux
-12. Format de sortie : code TypeScript brut uniquement. Aucune balise \`\`\`.
+10. INTERDIT : const url = page.url(); expect(url).toContain(...) — cette approche synchrone rate les navigations non terminées. TOUJOURS utiliser : await expect(page).toHaveURL(/pattern/)
+11. Pour vérifier l'URL après recherche : await expect(page).toHaveURL(/search|q=computer/)
+12. Encapsuler dans test.describe() nommé d'après le scénario
+13. Pas de console.log, pas de commentaires verbeux
+14. Format de sortie : code TypeScript brut uniquement. Aucune balise \`\`\`.
 
 # Format final
 Tu retournes seulement le code .spec.ts. Rien d'autre.`;
@@ -211,10 +213,11 @@ Site cible : ${url}
 3. Encapsuler dans un test.describe() nommé d'après le scénario.
 4. Pour chaque action UI : préférer les locators sémantiques Playwright (page.getByRole(), page.getByLabel(), page.getByText(), page.getByPlaceholder()) ou [data-test=...] / [data-testid=...] quand disponibles.
 5. Pour les assertions : TOUJOURS utiliser await expect(locator).toBeVisible() — JAMAIS expect(await locator).toBeVisible()
-6. Pas de timeout custom sauf nécessité ; les défauts Playwright suffisent.
-7. Pas de console.log, pas de commentaires verbeux. Un seul commentaire d'entête maximum (// scénario).
-8. Pas de fonction utilitaire externe : tout dans un seul fichier autonome.
-9. Format de sortie : code TypeScript brut, prêt à être écrit sur disque tel quel. Aucune balise \`\`\`, aucun commentaire d'introduction.
+6. Pour vérifier une URL : TOUJOURS utiliser await expect(page).toHaveURL(/pattern/) — JAMAIS const url = page.url(); expect(url).toContain(...)
+7. Pas de timeout custom sauf nécessité ; les défauts Playwright suffisent.
+8. Pas de console.log, pas de commentaires verbeux. Un seul commentaire d'entête maximum (// scénario).
+9. Pas de fonction utilitaire externe : tout dans un seul fichier autonome.
+10. Format de sortie : code TypeScript brut, prêt à être écrit sur disque tel quel. Aucune balise \`\`\`, aucun commentaire d'introduction.
 
 # Format final
 Tu retournes seulement le code .spec.ts. Rien d'autre.`;
