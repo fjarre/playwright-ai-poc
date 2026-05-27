@@ -109,7 +109,7 @@ Site cible : https://demowebshop.tricentis.com (NopCommerce — boutique e-comme
   - Bouton Register            : page.locator('input[value="Register"]')
   - Confirmation               : page.getByText('Your registration completed')
 - Panier (/cart)
-  - Lignes produits            : page.locator('.cart > tbody > tr').first()
+  - Lignes produits            : page.locator('tr.cart-item-row').first()   ← sélecteur fiable NopCommerce
   - Total commande             : page.locator('.cart-total')
 
 # Règles CRITIQUES
@@ -160,7 +160,7 @@ Site cible : https://automationexercise.com (boutique e-commerce de pratique pou
   - Bouton Search          : page.locator('button#submit_search')   ← OBLIGATOIRE
   - Section résultats      : page.locator('h2.title.text-center').filter({ hasText: 'Searched Products' })
 - Panier (/view_cart)
-  - Lignes produits        : page.locator('#cart_info_table tbody tr')
+  - Lignes produits        : page.locator('#cart_info_table tbody tr').first()   ← TOUJOURS .first()
 - Formulaire Signup (/login — SCOPE OBLIGATOIRE à .signup-form)
   - Titre                  : page.locator('.signup-form h2')  → texte "New User Signup!"
   - Champ Name             : page.locator('input[data-qa="signup-name"]')
