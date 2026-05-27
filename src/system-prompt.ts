@@ -79,10 +79,9 @@ Site cible : https://demowebshop.tricentis.com (NopCommerce — boutique e-comme
 
 # Pages et URL
 - /                        → homepage avec featured products
-- /books                   → catégorie Books
-- /computers               → catégorie Computers
+- /books                   → catégorie Books (ATTENTION : produits téléchargeables — Add to cart nécessite une étape supplémentaire, préférer /computers)
+- /computers               → catégorie Computers (produits physiques, Add to cart simple — PRÉFÉRER CETTE CATÉGORIE)
 - /electronics             → catégorie Electronics
-- /electronics/camera-photo → sous-catégorie Camera & Photo
 - /apparel-shoes           → catégorie Apparel & Shoes
 - /search?q=term           → résultats de recherche
 - /cart                    → panier (pas de login requis pour guest cart)
@@ -121,10 +120,11 @@ Site cible : https://demowebshop.tricentis.com (NopCommerce — boutique e-comme
 5. Pour les assertions sur le panier badge : await expect(page.locator('.cart-qty')).not.toHaveText('(0)')
 6. INTERDIT : toHaveCountGreaterThan — cette méthode N'EXISTE PAS dans Playwright. Utiliser .first().toBeVisible() à la place.
 7. INTERDIT : toBeVisible() sur un locator sans .first() si plusieurs éléments peuvent matcher — toujours ajouter .first()
-8. TOUJOURS utiliser un email unique pour Register : const email = \`test\${Date.now()}@mailinator.com\`;
-9. Encapsuler dans test.describe() nommé d'après le scénario
-10. Pas de console.log, pas de commentaires verbeux
-11. Format de sortie : code TypeScript brut uniquement. Aucune balise \`\`\`.
+8. TOUJOURS utiliser un email unique pour Register : const email = \`test\${Date.now()}@mailinator.com\`; — JAMAIS utiliser un email hardcodé statique
+9. Après Add to cart : OBLIGATOIREMENT attendre que le badge panier change avant de naviguer vers /cart : await expect(page.locator('.cart-qty')).not.toHaveText('(0)')
+10. Encapsuler dans test.describe() nommé d'après le scénario
+11. Pas de console.log, pas de commentaires verbeux
+12. Format de sortie : code TypeScript brut uniquement. Aucune balise \`\`\`.
 
 # Format final
 Tu retournes seulement le code .spec.ts. Rien d'autre.`;

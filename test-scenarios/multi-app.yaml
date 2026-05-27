@@ -45,17 +45,20 @@ scenarios:
       Naviguer vers https://demowebshop.tricentis.com/register.
       Vérifier que les champs #FirstName, #LastName, #Email, #Password sont visibles.
       Remplir le formulaire : FirstName='Test', LastName='User',
-        Email='testuser.ite281@mailinator.com', Password='Test1234!', ConfirmPassword='Test1234!'.
+        Email=utiliser un email unique dynamique avec Date.now() (ex: test${Date.now()}@mailinator.com),
+        Password='Test1234!', ConfirmPassword='Test1234!'.
       Cliquer sur le bouton input[value="Register"].
       Vérifier le message de confirmation 'Your registration completed'.
 
   - name: "DemoWebShop - Panier et récapitulatif de commande"
     url: "https://demowebshop.tricentis.com"
     prompt: |
-      Naviguer vers https://demowebshop.tricentis.com/books.
+      Naviguer vers https://demowebshop.tricentis.com/computers.
       Vérifier qu'au moins un produit est visible dans .product-grid .item-box.
       Cliquer sur le titre du premier produit (.product-grid .item-box .product-title a).
+      Vérifier que le prix du produit est visible sur la page détail (.actual-price).
       Cliquer sur le bouton Add to cart (input[value="Add to cart"]).
+      Attendre que le badge panier (.cart-qty) ne contienne plus '(0)' avant de continuer.
       Naviguer vers https://demowebshop.tricentis.com/cart.
       Vérifier qu'au moins une ligne produit est présente (.cart > tbody > tr).
       Vérifier que le total de commande est affiché (.cart-total).
