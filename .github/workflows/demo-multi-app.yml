@@ -16,6 +16,8 @@ on:
     paths:
       - "test-scenarios/multi-app.yaml"
       - "src/**"
+      - "playwright.config.ts"
+      - ".github/workflows/demo-multi-app.yml"
 
 permissions:
   contents: read
